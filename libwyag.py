@@ -146,3 +146,26 @@ argsp.add_argument("path",
 
 def cmd_init(args):
     repo_create(args.path)
+
+# When you run commands from anywhere inside a project, Git searches upward until it finds a .git directory.
+def repo_find(path = ".", required = True):
+    path = os.path.realpath(path)
+
+    if os.path.isdir(os.path.join(path, ".git")):
+        return GitRepository(path)
+
+    # If we didn’t already find .git, search in the parent directory next, (recurse in parent)
+    parent = os.path.realpath(os.path.join(path, ".."))
+
+    if parent == path:
+        # Bottom case
+        # os.path.join("/", "..") == "/":
+        # If parent==path, then path is root.
+        if required:
+            raise Exception("No git directory.")
+        else:
+            return None
+
+    # Recursive case
+    return repo_find(parent, required)
+
